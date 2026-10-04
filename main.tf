@@ -1,46 +1,34 @@
-module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0"
+resource "aws_eks_cluster" "main" {
+  name     = "dev"
+  role_arn = aws_iam_role.cluster.arn
+  version  = "1.35"
 
-  name               = "my-cluster"
-  kubernetes_version = "1.34"
+  access_config {
+    authentication_mode = "API"
+  }
 
-#   addons = {
-#     coredns                = {}
-#     eks-pod-identity-agent = {
-#       before_compute = true 
-#     }
-#     kube-proxy             = {}
-#     vpc-cni                = {
-#       before_compute = true
-#     }
-#   }
+  vpc_config {
+    subnet_ids = [
+      "subnet-0e9272cbed90dc89c",
+      "subnet-05ff6038d2dcf648e",
+    ]
+  }
+}
 
-  # Optional
-  endpoint_public_access = true
+resource "aws_eks_node_group" "main" {
+  cluster_name  = aws_eks_cluster.main.name
+  node_role_arn = aws_iam_role.node.arn
+  subnet_ids = [
+    "subnet-0e9272cbed90dc89c",
+    "subnet-05ff6038d2dcf648e",
+  ]
+  scaling_config {
+    desired_size = 1
+    max_size     = 1
+    min_size     = 10
+  }
 
-  # Optional: Adds the current caller identity as an administrator via cluster access entry
-  enable_cluster_creator_admin_permissions = true
-
-  vpc_id                   = "vpc-0fcbf944165ec4597"
-  subnet_ids               = ["subnet-0e9272cbed90dc89c", "subnet-05ff6038d2dcf648e"]
-  control_plane_subnet_ids = ["subnet-0e9272cbed90dc89c", "subnet-05ff6038d2dcf648e"]
- 
-  # EKS Managed Node Group(s)
-  eks_managed_node_groups = {
-    example = {
-      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["t3.xlarge"]
-
-      min_size     = 1
-      max_size     = 10
-      desired_size = 1
-    }
-  } 
-
-  tags = {
-    Environment = "dev"
-    Terraform   = "true"
+  update_config {
+    max_unavailable = 1
   }
 }
