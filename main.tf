@@ -32,3 +32,21 @@ resource "aws_eks_node_group" "main" {
     max_unavailable = 1
   }
 }
+
+resource "aws_eks_access_entry" "workstation" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = arn:aws:iam::798701233543:role/workstation-role
+  type = "STANDARD"
+
+}
+
+resource "aws_eks_access_policy_association" "workstation" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = arn:aws:iam::798701233543:role/workstation-role
+  access_scope {
+    type       = "cluster"
+  }
+}
+
+
