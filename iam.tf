@@ -1,6 +1,6 @@
 # IAM role for the EKS cluster
 resource "aws_iam_role" "cluster" {
-  name = "dev-eks-cluster-role"
+  name_prefix = "dev-eks-cluster-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "cluster_policy" {
 
 # IAM role for the EKS worker nodes
 resource "aws_iam_role" "node" {
-  name = "dev-eks-node-role"
+  name_prefix = "dev-eks-node-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
